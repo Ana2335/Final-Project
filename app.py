@@ -1,73 +1,143 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import streamlit as st
 import numpy as np
-from keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+import torch
 import pickle
 import matplotlib.pyplot as plt
 import seaborn as sns
+from keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from transformers import BertTokenizer, BertModel, DebertaTokenizer, DebertaModel
 from wordcloud import WordCloud
-from sklearn.metrics import classification_report, confusion_matrix
+import torch.nn as nn
 
-# Cargar modelo y tokenizer
+
+st.title("Sarcasm Detection Classification Model 🗯️")
+
+# ========== CARGA DE MODELOS ==========
+
+# -------- MODELO LSTM (Keras) --------
 @st.cache_resource
-def load_artifacts():
+def load_lstm():
     model = load_model("sarcasm_model.h5")
     with open("tokenizer.pkl", "rb") as f:
         tokenizer = pickle.load(f)
     return model, tokenizer
 
-model, tokenizer = load_artifacts()
-
-# Parámetros del modelo
-vocab_size = 10000
 maxlen = 50
+vocab_size = 10000
 
-# Cargar dataset 
+# -------- MODELO BERT --------
+class BertClassifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.bert = BertModel.from_pretrained("bert-base-uncased")
+        self.dropout = nn.Dropout(0.3)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, 1)
+
+    def forward(self, input_ids, attention_mask):
+        output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        pooled = output.pooler_output
+        x = self.dropout(pooled)
+        return self.classifier(x)
+
+@st.cache_resource
+def load_bert():
+    model = BertClassifier()
+    state_dict = torch.load("bert_model (1).pth", map_location="cpu")
+    model.load_state_dict(state_dict)
+    model.eval()
+
+    with open("bert_tokenizer.pkl", "rb") as f:
+        tokenizer = pickle.load(f)
+    return model, tokenizer
+
+# -------- MODELO DeBERTa --------
+class DebertaClassifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.deberta = DebertaModel.from_pretrained("microsoft/deberta-base")
+        self.dropout = nn.Dropout(0.3)
+        self.classifier = nn.Linear(self.deberta.config.hidden_size, 1)
+
+    def forward(self, input_ids, attention_mask):
+        output = self.deberta(input_ids=input_ids, attention_mask=attention_mask)
+        pooled = output.last_hidden_state[:, 0, :]
+        x = self.dropout(pooled)
+        return self.classifier(x)
+
+@st.cache_resource
+def load_deberta():
+    model = DebertaClassifier()
+    state_dict = torch.load("deberta_model (1).pth", map_location="cpu")
+    model.load_state_dict(state_dict)
+    model.eval()
+
+    with open("deberta_tokenizer.pkl", "rb") as f:
+        tokenizer = pickle.load(f)
+    return model, tokenizer
+
+
+# ========== CARGA DE DATA ==========
 @st.cache_data
 def load_data():
     df = pd.read_json("Sarcasm_Headlines_Dataset.json", lines=True)
     df = df.rename(columns={"is_sarcastic": "label"})
     return df
+
 df = load_data()
 
-st.title("Sarcasm Detection Classification Model 🗯️")
+# ========== PREDICCIÓN ==========
+def predict(text, model_name):
+    if model_name == "LSTM":
+        model, tokenizer = load_lstm()
+        sequence = tokenizer.texts_to_sequences([text])
+        padded = pad_sequences(sequence, maxlen=maxlen, padding='post', truncating='post')
+        prob = model.predict(padded)[0][0]
+        return prob
 
-# Inference Interface
-def main():
+    elif model_name == "BERT":
+        model, tokenizer = load_bert()
+        inputs = tokenizer([text], padding="max_length", truncation=True, max_length=64, return_tensors="pt")
+        with torch.no_grad():
+            output = model(inputs["input_ids"], inputs["attention_mask"]).squeeze()
+            prob = torch.sigmoid(output).item()
+        return prob
+
+    elif model_name == "DeBERTa":
+        model, tokenizer = load_deberta()
+        inputs = tokenizer([text], padding="max_length", truncation=True, max_length=64, return_tensors="pt")
+        with torch.no_grad():
+            output = model(inputs["input_ids"], inputs["attention_mask"]).squeeze()
+            prob = torch.sigmoid(output).item()
+        return prob
+
+# ========== INFERENCE PAGE ==========
+def inference_interface():
     st.header("Sarcasm Detection 🌀🔍")
+    model_choice = st.selectbox("Select model:", ["LSTM", "BERT", "DeBERTa"])
     user_input = st.text_area("Write a text to predict if it contains sarcasm:", "Yeah, because that totally worked last time")
-    
+
     if st.button("Predict"):
         if user_input.strip() == "":
             st.warning("Please write a text to analyze")
         else:
-            # Preprocesar y predecir
-            sequence = tokenizer.texts_to_sequences([user_input])
-            padded = pad_sequences(sequence, maxlen=maxlen, padding='post', truncating='post')
-            pred = model.predict(padded)[0][0]
-
-            # Mostrar resultado con estilo
-            if pred > 0.5:
-                st.success(f"Sarcastic 🌀: Trus of  {pred:.2%}")
+            prob = predict(user_input, model_choice)
+            if prob > 0.5:
+                st.success(f"{model_choice} → Sarcastic 🌀: Trust of {prob:.2%}")
             else:
-                st.error(f"Not sarcastic 🚫: Trust of  {1 - pred:.2%}")
+                st.error(f"{model_choice} → Not sarcastic 🚫: Trust of {1 - prob:.2%}")
 
+# ========== VISUALIZATION PAGE ==========
 def visualization():
     st.header("Data visualization 📊📈")
-    #st.markdown("Análisis exploratorio del conjunto de datos utilizado para entrenar el modelo de detección de sarcasmo.")
-
-    # --- Distribución de clases ---
     st.subheader("Class distribution 📊")
     fig1, ax1 = plt.subplots()
     sns.countplot(data=df, x="label", ax=ax1, palette="coolwarm")
-    ax1.set_xticklabels(["Not sarcastic 🚫", "Sarcastic 🌀"])
+    ax1.set_xticklabels(["Not Sarcastic 🚫", "Sarcastic 🌀"])
     ax1.set_ylabel("Amount")
     st.pyplot(fig1)
 
-    # --- Longitud de los titulares ---
     st.subheader("Token length histograms 📈")
     df["length"] = df["headline"].apply(lambda x: len(x.split()))
     fig2, ax2 = plt.subplots()
@@ -75,61 +145,39 @@ def visualization():
     ax2.set_xlabel("Number of words")
     st.pyplot(fig2)
 
-    # --- WordCloud opcional ---
     st.subheader("Word clouds ☁️")
-
-    # Nube de palabras para cada clase
     col1, col2 = st.columns(2)
-
     with col1:
-        st.markdown("**Not Sarcastic**")
+        st.markdown("*Not Sarcastic*")
         text = " ".join(df[df["label"] == 0]["headline"])
         wc = WordCloud(width=300, height=200, background_color="white").generate(text)
         st.image(wc.to_array())
-
     with col2:
-        st.markdown("**Sarcastic**")
+        st.markdown("*Sarcastic*")
         text = " ".join(df[df["label"] == 1]["headline"])
         wc = WordCloud(width=300, height=200, background_color="white").generate(text)
         st.image(wc.to_array())
 
-    # --- Ejemplos de casos ambiguos ---
-    st.subheader("Ambigous examples 🤔")
-
-    # Predecimos todas las probabilidades
-    sequences = tokenizer.texts_to_sequences(df["headline"])
-    padded = pad_sequences(sequences, maxlen=50, padding='post', truncating='post')
+    st.subheader("Ambiguous examples 🤔")
+    model, tokenizer = load_lstm()
+    seqs = tokenizer.texts_to_sequences(df["headline"])
+    padded = pad_sequences(seqs, maxlen=50, padding='post', truncating='post')
     probs = model.predict(padded).flatten()
-
     df["pred_confidence"] = probs
-    df["ambiguity_score"] = np.abs(df["pred_confidence"] - 0.5)  # valores cerca de 0.5 = más ambiguos
-
-    # Seleccionar los más ambiguos
+    df["ambiguity_score"] = np.abs(probs - 0.5)
     ambiguous = df.sort_values("ambiguity_score").head(5)
     ambiguous["pred_label"] = np.where(ambiguous["pred_confidence"] > 0.5, "Sarcastic", "Not Sarcastic")
     ambiguous["true_label"] = ambiguous["label"].replace({0: "Not Sarcastic", 1: "Sarcastic"})
-
     st.dataframe(ambiguous[["headline", "true_label", "pred_label", "pred_confidence"]])
 
-    
+# ========== TUNING PAGE ==========
 def tuning():
     st.header("Hyperparameter Tuning ⚙️")
-    st.markdown("Results of the tuning process using Optun")
-
-    # --- Cargar datos reales ---
-    @st.cache_data
-    def load_results():
-        df = pd.read_csv("optuna_results.csv")  # Asegúrate de mover el archivo ahí si no está
-        return df
-
-    df = load_results()
-
-    # --- Mostrar tabla con mejores resultados ---
+    df = pd.read_csv("optuna_results.csv")
     st.subheader("Top Trials 📋")
     top_trials = df.sort_values(by="val_accuracy", ascending=False).head(5)
     st.dataframe(top_trials)
 
-    # --- Gráfica de desempeño ---
     st.subheader("Validation accuracy per trial 📈")
     fig, ax = plt.subplots()
     sns.lineplot(x="trial", y="val_accuracy", data=df, marker="o", ax=ax)
@@ -137,86 +185,51 @@ def tuning():
     ax.set_xlabel("Trial")
     st.pyplot(fig)
 
-    # --- Hiperparámetros ganadores ---
     st.subheader("Best Hyperparameters 🏆")
     best = df.loc[df["val_accuracy"].idxmax()]
     st.markdown(f"""
-    - **embedding_dim:** {int(best['embedding_dim'])}  
-    - **lstm_units:** {int(best['lstm_units'])}  
-    - **dropout:** {best['dropout']:.4f}  
-    - **learning_rate:** {best['learning_rate']:.4f}  
-    - **batch_size:** {int(best['batch_size'])}  
-    - **validation_accuracy:** {best['val_accuracy']:.2%}
+    - *embedding_dim:* {int(best['embedding_dim'])}  
+    - *lstm_units:* {int(best['lstm_units'])}  
+    - *dropout:* {best['dropout']:.4f}  
+    - *learning_rate:* {best['learning_rate']:.4f}  
+    - *batch_size:* {int(best['batch_size'])}  
+    - *validation_accuracy:* {best['val_accuracy']:.2%}
     """)
 
-
+# ========== JUSTIFICATION PAGE ==========
 def justification():
-    st.header("Justification 🧐")
+    st.header("Model Analysis and Justification 🧐")
+    st.subheader("Classification Reports")
+    st.image("clasification_report.png", caption="LSTM", use_column_width=True)
+    st.image("bert_report.png", caption="BERT", use_column_width=True)
+    st.image("deberta_report.png", caption="DeBERTa", use_column_width=True)
 
-    # --- Preprocesamiento ---
-    from sklearn.model_selection import train_test_split
+    st.subheader("Confusion Matrices")
+    st.image("confusion_matrix.png", caption="LSTM", use_column_width=True)
+    st.image("bert_confusion_matrix.jpeg", caption="BERT", use_column_width=True)
+    st.image("deberta_confusion_matrix.jpeg", caption="DeBERTa", use_column_width=True)
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        df["headline"], df["label"], test_size=0.2, stratify=df["label"]
-    )
+    st.subheader("Error Analysis")
+    st.markdown("""
+    False positives often occur when headlines use exaggerated language without actual sarcasm.
+    False negatives include headlines that are subtle or require external context.
 
-    X_val_seq = tokenizer.texts_to_sequences(X_val)
-    X_val_pad = pad_sequences(X_val_seq, maxlen=50, padding='post', truncating='post')
+    *DeBERTa* performed slightly better in recall for both classes due to its deeper syntactic understanding.
+    """)
 
-    # --- Predicción ---
-    y_pred_prob = model.predict(X_val_pad)
-    y_pred = (y_pred_prob > 0.5).astype(int)
+# ========== LAYOUT ==========
+page = st.selectbox("Select one:", [
+    "Inference Interface", 
+    "Dataset Visualization", 
+    "Hyperparameter Tuning", 
+    "Model Analysis and Justification"])
 
-    # --- Classification report ---
-    st.subheader("Classification Report 📋")
-    st.image("clasification_report.png", caption="Classification Report", use_column_width=True)
-
-    # --- Confusion matrix ---
-    st.subheader("Confusion Matrix 📊")
-    st.image("confusion_matrix.png", caption="Confusion Matrix", use_column_width=True)
-
-    # --- Análisis de errores ---
-    st.subheader("Examples of model errors ⚠️")
-
-    X_val_reset = X_val.reset_index(drop=True)
-    y_val_reset = y_val.reset_index(drop=True)
-    y_pred_flat = y_pred.flatten()
-
-    errors = pd.DataFrame({
-        "headline": X_val_reset,
-        "true_label": y_val_reset,
-        "predicted": y_pred_flat,
-        "confidence": y_pred_prob.flatten()
-    })
-
-    false_pos = errors[(errors["true_label"] == 0) & (errors["predicted"] == 1)]
-    false_neg = errors[(errors["true_label"] == 1) & (errors["predicted"] == 0)]
-
-    st.markdown("#### False Positives 🚫 (predicted sarcasm but it wasn't)")
-    st.table(false_pos[["headline", "confidence"]].head(3))
-
-    st.markdown("#### False Negatives 🚫 (didn't predict sarcasm but it was)")
-    st.table(false_neg[["headline", "confidence"]].head(3))
-
-    # --- Justificación del modelo (opcional texto) ---
-    st.subheader("Justification of the Model chosen")
-    st.markdown("""An LSTM model was chosen because it is effective in sequential text classification tasks like this one. 
-                The model achieved a validation accuracy of 85%, and Optuna helped find an optimal hyperparameter combination. 
-                Although some errors are due to language ambiguity, the overall performance is solid.""")
-#st.sidebar.title("Navigation")
-#pagina = st.sidebar.selectbox
-
-pagina = st.selectbox("Select one:", ["Inference Interface", 
-                                             "Dataset Visualization", 
-                                             "Hyperparameter Tuning", 
-                                             "Model Analysis and Justification"])
-
-if pagina == "Inference Interface":
-    main()
-elif pagina == "Dataset Visualization":
+if page == "Inference Interface":
+    inference_interface()
+elif page == "Dataset Visualization":
     visualization()
-elif pagina == "Hyperparameter Tuning":
+elif page == "Hyperparameter Tuning":
     tuning()
-elif pagina == "Model Analysis and Justification":
+elif page == "Model Analysis and Justification":
     justification()
 
