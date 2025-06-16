@@ -313,9 +313,9 @@ def justification():
     st.write("3️⃣ DeBERTa")
     st.image("deberta_confusion_matrix.jpeg", caption="DeBERTa", use_container_width=True)
     st.markdown("""
-    - 1️⃣ LSTM tended to overpredict the majority class (non-sarcastic).
-    - 2️⃣ BERT showed better class separation but missed subtle sarcasm.
-    - 3️⃣ DeBERTa balanced precision and recall more effectively.
+    - 1️ LSTM tended to overpredict the majority class (non-sarcastic).
+    - 2️ BERT showed better class separation but missed subtle sarcasm.
+    - 3️ DeBERTa balanced precision and recall more effectively.
     """)
 
     # === 5. Error Analysis ===
