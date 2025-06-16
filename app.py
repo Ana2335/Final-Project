@@ -284,9 +284,9 @@ def justification():
     # === 2. Model Justification ===
     st.subheader("Model Selection and Justification 🧩")
     st.markdown("""
-    - 1️⃣ LSTM: Used as a baseline. Handles sequence data and learns word dependencies, but struggles with long-range context and syntactic nuance.
-    - 2️⃣ BERT: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
-    - 3️⃣ DeBERTa: Builds on BERT with disentangled attention and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
+    - 1. LSTM: Used as a baseline. Handles sequence data and learns word dependencies, but struggles with long-range context and syntactic nuance.
+    - 2. BERT: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
+    - 3. DeBERTa: Builds on BERT with disentangled attention and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
 
     The dataset used in this project was obtained from [Hugging Face Datasets Hub](https://huggingface.co/datasets/SarcasmHeadlines) and is based on the original [Sarcasm Headlines Dataset](https://www.kaggle.com/datasets/rmisra/news-headlines-dataset-for-sarcasm-detection) published by Misra (2018). 
 
