@@ -236,31 +236,35 @@ def tuning():
 
     elif model_option == "BERT":
         st.markdown("""
-        For **BERT**, we fine-tuned a pretrained transformer using HuggingFace's `Trainer` class.  
-        Due to the high computational cost, we only tuned a **limited set** of parameters:
-
-        - 🧠 `learning_rate`: grid search in [2e-5, 3e-5, 5e-5]
-        - 📦 `batch_size`: [16, 32]
-        - 🌀 `epochs`: usually fixed (e.g., 3 or 4)
-
-        We selected the best configuration based on validation F1-score. Full trial data not available as training was run on Colab with limited budget.
+        We fine-tuned a custom BERT model using **PyTorch** and `bert-base-uncased`.  
+        Although we did not use Optuna for automated tuning due to time and compute constraints,
+        we manually set the following commonly recommended hyperparameters:
+    
+        - 🧠 `learning_rate`: **2e-5**
+        - 📦 `batch_size`: **16**
+        - 🔁 `epochs`: **3**
+    
+        These values were selected based on popular setups in BERT fine-tuning literature.
         """)
-
+    
+        st.info("Manual tuning used. No Optuna logs available.")
         st.info("Due to resource limitations, detailed tuning metrics are not available for BERT.")
 
     elif model_option == "DeBERTa":
         st.markdown("""
-        For **DeBERTa**, we used the `AutoModelForSequenceClassification` class and fine-tuned using default pretrained weights.
-        The tuning process was limited to:
-
-        - 🧠 `learning_rate`: [1e-5, 2e-5, 3e-5]
-        - 📦 `batch_size`: [16, 32]
-        - 🧪 `weight_decay`: small values like 0.01 or 0.1 to reduce overfitting
-
-        The best run was selected manually based on evaluation accuracy.
+        Our DeBERTa model was fine-tuned using `microsoft/deberta-base` and PyTorch.  
+        As with BERT, we did not perform automated tuning. Instead, we used the following parameters:
+    
+        - 🧠 `learning_rate`: **2e-5**
+        - 📦 `batch_size`: **16**
+        - 🔁 `epochs`: **3**
+        - 🌧 `dropout`: **0.3**
+    
+        This configuration was chosen to mirror typical transformer fine-tuning setups.
         """)
-
-        st.info("No Optuna logs are available for DeBERTa, but key parameter ranges are documented.")
+        
+        st.info("Manual tuning based on default DeBERTa fine-tuning strategies.")
+        st.info("Due to resource limitations, detailed tuning metrics are not available for DeBERTa.")
 
 # ========== JUSTIFICATION PAGE ==========
 def justification():
