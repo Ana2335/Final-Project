@@ -284,9 +284,9 @@ def justification():
     # === 2. Model Justification ===
     st.subheader("Model Selection and Justification 🧩")
     st.markdown("""
-    1️⃣ LSTM: Used as a baseline. Handles sequence data and learns word dependencies, but struggles with long-range context and syntactic nuance.
-    2️⃣ BERT: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
-    3️⃣ DeBERTa: Builds on BERT with disentangled attention and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
+    - 1️⃣ LSTM: Used as a baseline. Handles sequence data and learns word dependencies, but struggles with long-range context and syntactic nuance.
+    - 2️⃣ BERT: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
+    - 3️⃣ DeBERTa: Builds on BERT with disentangled attention and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
 
     Based on prior work such as [Kaggle’s sarcasm detection kernels](https://www.kaggle.com/competitions/news-headlines-sarcasm-detection), transformer models consistently outperform RNNs for nuanced tasks like sarcasm detection.
     """)
@@ -300,11 +300,11 @@ def justification():
     st.write("3️⃣ DeBERTa")
     st.image("deberta_report.png", caption="DeBERTa", use_container_width=True)
     st.markdown("""
-    DeBERTa achieved the highest **F1-score** and balanced performance between classes, especially in identifying **sarcastic content**, which tends to be more contextually complex.
+    DeBERTa achieved the highest F1-score and balanced performance between classes, especially in identifying sarcastic content, which tends to be more contextually complex.
     """)
 
     # === 4. Confusion Matrices ===
-    st.subheader("Confusion Matrices 🧮")
+    st.subheader("Confusion Matrices 📊")
     st.write("1️⃣ LSTM")
     st.image("confusion_matrix.png", caption="LSTM", use_container_width=True)
     st.write("2️⃣ BERT")
@@ -312,9 +312,9 @@ def justification():
     st.write("3️⃣ DeBERTa")
     st.image("deberta_confusion_matrix.jpeg", caption="DeBERTa", use_container_width=True)
     st.markdown("""
-    1️⃣ LSTM tended to overpredict the majority class (non-sarcastic).
-    2️⃣ BERT showed better class separation but missed subtle sarcasm.
-    3️⃣ DeBERTa balanced precision and recall more effectively.
+    - 1️⃣ LSTM tended to overpredict the majority class (non-sarcastic).
+    - 2️⃣ BERT showed better class separation but missed subtle sarcasm.
+    - 3️⃣ DeBERTa balanced precision and recall more effectively.
     """)
 
     # === 5. Error Analysis ===
