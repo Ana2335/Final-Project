@@ -5,3 +5,7 @@ Pillow
 scikit-learn
 datasets
 plotly
+pandas
+matplotlib
+seaborn
+wordcloud
