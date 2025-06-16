@@ -236,7 +236,7 @@ def tuning():
 
     elif model_option == "BERT":
         st.markdown("""
-        We fine-tuned a custom BERT model using **PyTorch** and `bert-base-uncased`.  
+        We fine-tuned a custom BERT model using PyTorch and bert-base-uncased.  
         Although we did not use Optuna for automated tuning due to time and compute constraints,
         we manually set the following commonly recommended hyperparameters:
     
@@ -251,7 +251,7 @@ def tuning():
 
     elif model_option == "DeBERTa":
         st.markdown("""
-        Our DeBERTa model was fine-tuned using `microsoft/deberta-base` and PyTorch.  
+        Our DeBERTa model was fine-tuned using microsoft/deberta-base and PyTorch.  
         As with BERT, we did not perform automated tuning. Instead, we used the following parameters:
     
         - learning_rate 🧠: 2e-5
