@@ -131,44 +131,62 @@ def inference_interface():
 # ========== VISUALIZATION PAGE ==========
 def visualization():
     st.header("Data visualization 📊📈")
+
+    # --- Class Distribution ---
     st.subheader("Class distribution 📊")
+    st.markdown("This chart shows how balanced the dataset is between sarcastic and non-sarcastic headlines.")
     fig1, ax1 = plt.subplots()
     sns.countplot(data=df, x="label", ax=ax1, palette="coolwarm")
     ax1.set_xticklabels(["Not Sarcastic 🚫", "Sarcastic 🌀"])
-    ax1.set_ylabel("Amount")
+    ax1.set_ylabel("Number of headlines")
+    ax1.set_xlabel("Class")
     st.pyplot(fig1)
 
+    # --- Token Length Histogram ---
     st.subheader("Token length histograms 📈")
+    st.markdown("We measure how long headlines are in terms of number of words.")
     df["length"] = df["headline"].apply(lambda x: len(x.split()))
     fig2, ax2 = plt.subplots()
     sns.histplot(df["length"], bins=20, kde=True, ax=ax2)
-    ax2.set_xlabel("Number of words")
+    ax2.set_xlabel("Number of words per Headline")
+    ax2.set_ylabel("Frequency")
     st.pyplot(fig2)
 
+    # --- Word Clouds ---
     st.subheader("Word clouds ☁️")
+    st.markdown("Frequent words in each class may hint at language patterns linked to sarcasm.")
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("*Not Sarcastic*")
+        st.markdown("*Not Sarcastic 🚫*")
         text = " ".join(df[df["label"] == 0]["headline"])
         wc = WordCloud(width=300, height=200, background_color="white").generate(text)
         st.image(wc.to_array())
     with col2:
-        st.markdown("*Sarcastic*")
+        st.markdown("*Sarcastic 🌀*")
         text = " ".join(df[df["label"] == 1]["headline"])
         wc = WordCloud(width=300, height=200, background_color="white").generate(text)
         st.image(wc.to_array())
 
-    st.subheader("Ambiguous examples 🤔")
+    # --- Ambiguous Examples ---
+    st.subheader("Ambiguous or Noisy examples 🤔")
+    st.markdown("These are headlines where the model was least confident (close to 0.5). They may be difficult even for humans.")
+    
     model, tokenizer = load_lstm()
     seqs = tokenizer.texts_to_sequences(df["headline"])
     padded = pad_sequences(seqs, maxlen=50, padding='post', truncating='post')
     probs = model.predict(padded).flatten()
+    
     df["pred_confidence"] = probs
     df["ambiguity_score"] = np.abs(probs - 0.5)
     ambiguous = df.sort_values("ambiguity_score").head(5)
     ambiguous["pred_label"] = np.where(ambiguous["pred_confidence"] > 0.5, "Sarcastic", "Not Sarcastic")
     ambiguous["true_label"] = ambiguous["label"].replace({0: "Not Sarcastic", 1: "Sarcastic"})
     st.dataframe(ambiguous[["headline", "true_label", "pred_label", "pred_confidence"]])
+
+    # --- Average Headline Length ---
+    st.subheader("Average Headline Length per Class 📐")
+    avg_lengths = df.groupby("label")["length"].mean()
+    st.bar_chart(avg_lengths.rename(index={0: "Not Sarcastic", 1: "Sarcastic"}))
 
 # ========== TUNING PAGE ==========
 def tuning():
