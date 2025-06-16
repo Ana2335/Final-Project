@@ -191,28 +191,76 @@ def visualization():
 # ========== TUNING PAGE ==========
 def tuning():
     st.header("Hyperparameter Tuning ⚙️")
-    df = pd.read_csv("optuna_results.csv")
-    st.subheader("Top Trials 📋")
-    top_trials = df.sort_values(by="val_accuracy", ascending=False).head(5)
-    st.dataframe(top_trials)
 
-    st.subheader("Validation accuracy per trial 📈")
-    fig, ax = plt.subplots()
-    sns.lineplot(x="trial", y="val_accuracy", data=df, marker="o", ax=ax)
-    ax.set_ylabel("Validation Accuracy")
-    ax.set_xlabel("Trial")
-    st.pyplot(fig)
+    model_option = st.selectbox("Select a model to view tuning details:", ["LSTM", "BERT", "DeBERTa"])
 
-    st.subheader("Best Hyperparameters 🏆")
-    best = df.loc[df["val_accuracy"].idxmax()]
-    st.markdown(f"""
-    - *embedding_dim:* {int(best['embedding_dim'])}  
-    - *lstm_units:* {int(best['lstm_units'])}  
-    - *dropout:* {best['dropout']:.4f}  
-    - *learning_rate:* {best['learning_rate']:.4f}  
-    - *batch_size:* {int(best['batch_size'])}  
-    - *validation_accuracy:* {best['val_accuracy']:.2%}
-    """)
+    if model_option == "LSTM":
+        st.markdown("""
+        We used **Optuna** to tune hyperparameters for the LSTM model with the goal of maximizing validation accuracy.
+        The search space included:
+
+        - 📏 `embedding_dim`
+        - 🔄 `lstm_units`
+        - 🌧 `dropout`
+        - 🧠 `learning_rate`
+        - 📦 `batch_size`
+        """)
+
+        # Load and display results
+        df = pd.read_csv("optuna_results.csv")
+
+        st.subheader("Top Trials 📋")
+        top_trials = df.sort_values(by="val_accuracy", ascending=False).head(5)
+        st.dataframe(top_trials)
+
+        st.subheader("Validation Accuracy Over Trials 📈")
+        fig, ax = plt.subplots()
+        sns.lineplot(x="trial", y="val_accuracy", data=df, marker="o", ax=ax, color="green")
+        ax.set_ylabel("Validation Accuracy")
+        ax.set_xlabel("Trial Number")
+        ax.set_title("Optuna Optimization Progress")
+        st.pyplot(fig)
+
+        st.subheader("Best Hyperparameters 🏆")
+        best = df.loc[df["val_accuracy"].idxmax()]
+        st.markdown(f"""
+        **Best Trial Summary**
+
+        - 📏 `embedding_dim`: **{int(best['embedding_dim'])}**  
+        - 🔄 `lstm_units`: **{int(best['lstm_units'])}**  
+        - 🌧 `dropout`: **{best['dropout']:.4f}**  
+        - 🧠 `learning_rate`: **{best['learning_rate']:.5f}**  
+        - 📦 `batch_size`: **{int(best['batch_size'])}**  
+        - ✅ `validation_accuracy`: **{best['val_accuracy']:.2%}**
+        """)
+
+    elif model_option == "BERT":
+        st.markdown("""
+        For **BERT**, we fine-tuned a pretrained transformer using HuggingFace's `Trainer` class.  
+        Due to the high computational cost, we only tuned a **limited set** of parameters:
+
+        - 🧠 `learning_rate`: grid search in [2e-5, 3e-5, 5e-5]
+        - 📦 `batch_size`: [16, 32]
+        - 🌀 `epochs`: usually fixed (e.g., 3 or 4)
+
+        We selected the best configuration based on validation F1-score. Full trial data not available as training was run on Colab with limited budget.
+        """)
+
+        st.info("Due to resource limitations, detailed tuning metrics are not available for BERT.")
+
+    elif model_option == "DeBERTa":
+        st.markdown("""
+        For **DeBERTa**, we used the `AutoModelForSequenceClassification` class and fine-tuned using default pretrained weights.
+        The tuning process was limited to:
+
+        - 🧠 `learning_rate`: [1e-5, 2e-5, 3e-5]
+        - 📦 `batch_size`: [16, 32]
+        - 🧪 `weight_decay`: small values like 0.01 or 0.1 to reduce overfitting
+
+        The best run was selected manually based on evaluation accuracy.
+        """)
+
+        st.info("No Optuna logs are available for DeBERTa, but key parameter ranges are documented.")
 
 # ========== JUSTIFICATION PAGE ==========
 def justification():
