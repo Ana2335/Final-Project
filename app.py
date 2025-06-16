@@ -269,14 +269,14 @@ def justification():
     st.header("Model Analysis and Justification 🧐")
 
     # === 1. Dataset Analysis ===
-    st.subheader("What Makes This Dataset Challenging?")
+    st.subheader("What Makes This Dataset Challenging? 💪🏽")
     st.markdown("""
-    The *Sarcasm Headlines Dataset* is challenging due to several factors:
+    The Sarcasm Headlines Dataset is challenging due to several factors:
     
-    - ⚖️ **Subtle class imbalance**: Slightly more non-sarcastic headlines.
-    - 🔊 **Noisy language**: Headlines are short, informal, and often ambiguous.
-    - 🧠 **Context-dependency**: Sarcasm often depends on cultural or external knowledge.
-    - 🤷‍♀️ **Label ambiguity**: Some headlines may be sarcastic only in certain contexts.
+    - ⚖️ Subtle class imbalance: Slightly more non-sarcastic headlines.
+    - 🔊 Noisy language: Headlines are short, informal, and often ambiguous.
+    - 📜 Context-dependency**: Sarcasm often depends on cultural or external knowledge.
+    - 🧐 Label ambiguity: Some headlines may be sarcastic only in certain contexts.
 
     These challenges require models with strong linguistic and contextual understanding.
     """)
@@ -284,17 +284,20 @@ def justification():
     # === 2. Model Justification ===
     st.subheader("Model Selection and Justification 🧩")
     st.markdown("""
-    - 🧪 **LSTM**: Used as a baseline. Handles sequence data and learns word dependencies, but struggles with long-range context and syntactic nuance.
-    - 🤖 **BERT**: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
-    - 🧠 **DeBERTa**: Builds on BERT with **disentangled attention** and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
+    1️⃣ LSTM: Used as a baseline. Handles sequence data and learns word dependencies, but struggles with long-range context and syntactic nuance.
+    2️⃣ BERT: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
+    3️⃣ DeBERTa: Builds on BERT with disentangled attention and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
 
     Based on prior work such as [Kaggle’s sarcasm detection kernels](https://www.kaggle.com/competitions/news-headlines-sarcasm-detection), transformer models consistently outperform RNNs for nuanced tasks like sarcasm detection.
     """)
 
     # === 3. Classification Reports ===
     st.subheader("Classification Reports 📄")
+    st.write("1️⃣ LSTM")
     st.image("clasification_report.png", caption="LSTM", use_container_width=True)
+    st.write("2️⃣ BERT")
     st.image("bert_report.png", caption="BERT", use_container_width=True)
+    st.write("3️⃣ DeBERTa")
     st.image("deberta_report.png", caption="DeBERTa", use_container_width=True)
     st.markdown("""
     DeBERTa achieved the highest **F1-score** and balanced performance between classes, especially in identifying **sarcastic content**, which tends to be more contextually complex.
@@ -302,36 +305,39 @@ def justification():
 
     # === 4. Confusion Matrices ===
     st.subheader("Confusion Matrices 🧮")
+    st.write("1️⃣ LSTM")
     st.image("confusion_matrix.png", caption="LSTM", use_container_width=True)
+    st.write("2️⃣ BERT")
     st.image("bert_confusion_matrix.jpeg", caption="BERT", use_container_width=True)
+    st.write("3️⃣ DeBERTa")
     st.image("deberta_confusion_matrix.jpeg", caption="DeBERTa", use_container_width=True)
     st.markdown("""
-    - LSTM tended to overpredict the majority class (non-sarcastic).
-    - BERT showed better class separation but missed subtle sarcasm.
-    - DeBERTa balanced precision and recall more effectively.
+    1️⃣ LSTM tended to overpredict the majority class (non-sarcastic).
+    2️⃣ BERT showed better class separation but missed subtle sarcasm.
+    3️⃣ DeBERTa balanced precision and recall more effectively.
     """)
 
     # === 5. Error Analysis ===
-    st.subheader("Error Analysis 🧨")
+    st.subheader("Error Analysis 🚫")
     st.markdown("""
     **False Positives**:  
     Headlines with exaggeration or negativity, but not true sarcasm.  
-    Example: *"World ends tomorrow, women and minorities hardest hit"*
+    Example: "World ends tomorrow, women and minorities hardest hit"
 
     **False Negatives**:  
     Subtle sarcasm, often requiring world knowledge or tone.  
-    Example: *"Oh great, another Monday morning meeting"*
+    Example: "Oh great, another Monday morning meeting"
 
     **Common patterns**:
-    - Named entities (e.g., politicians, celebrities)
+    - Named entities (politicians, celebrities, etc.)
     - Negations and irony
     - Short ambiguous headlines
 
     **Suggestions for Improvement**:
-    - Include **external context** (e.g., news topic, article body)
-    - Apply **data augmentation** (e.g., back translation or adversarial examples)
-    - Use **ensemble models** (e.g., DeBERTa + CNN or LSTM voting)
-    - Improve labeling with **crowdsourced validation**
+    - Include external context (like news topic or article body)
+    - Apply data augmentation (back translation or adversarial examples)
+    - Use ensemble models (DeBERTa + CNN or LSTM voting)
+    - Improve labeling with crowdsourced validation
     """)
 
     st.success("Overall, DeBERTa demonstrated the best understanding of syntactic cues and contextual subtleties in this sarcasm detection task.")
