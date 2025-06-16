@@ -1,0 +1,6 @@
+streamlit
+tf-nightly
+numpy
+Pillow
+scikit-learn
+datasets
