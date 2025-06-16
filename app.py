@@ -247,8 +247,7 @@ def tuning():
         These values were selected based on popular setups in BERT fine-tuning literature.
         """)
     
-        st.info("Manual tuning used. No Optuna logs available.")
-        st.info("Due to resource limitations, detailed tuning metrics are not available for BERT.")
+        sst.info("Due to resource and time constraints, automated tuning was not performed for BERT. The configuration was selected manually based on established fine-tuning practices.")
 
     elif model_option == "DeBERTa":
         st.markdown("""
@@ -263,8 +262,7 @@ def tuning():
         This configuration was chosen to mirror typical transformer fine-tuning setups.
         """)
         
-        st.info("Manual tuning based on default DeBERTa fine-tuning strategies.")
-        st.info("Due to resource limitations, detailed tuning metrics are not available for DeBERTa.")
+        st.info("As with BERT, automated tuning was not applied to DeBERTa. Hyperparameters were selected manually following standard fine-tuning recommendations for transformer-based models.")
 
 # ========== JUSTIFICATION PAGE ==========
 def justification():
