@@ -288,8 +288,7 @@ def justification():
     - 2️⃣ BERT: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
     - 3️⃣ DeBERTa: Builds on BERT with disentangled attention and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
 
-    Based on prior work such as [Kaggle’s sarcasm detection kernels](https://www.kaggle.com/competitions/news-headlines-sarcasm-detection), transformer models consistently outperform RNNs for nuanced tasks like sarcasm detection.
-    """)
+    We based our work on the [Sarcasm Headlines Dataset](https://www.kaggle.com/datasets/rmisra/news-headlines-dataset-for-sarcasm-detection), which has been widely used for sarcasm detection tasks. Prior implementations on Kaggle have shown that transformer-based models outperform traditional RNNs when handling short, context-dependent text like headlines.
 
     # === 3. Classification Reports ===
     st.subheader("Classification Reports 📄")
