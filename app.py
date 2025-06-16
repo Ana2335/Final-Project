@@ -200,14 +200,14 @@ def tuning():
 def justification():
     st.header("Model Analysis and Justification 🧐")
     st.subheader("Classification Reports")
-    st.image("clasification_report.png", caption="LSTM", use_column_width=True)
-    st.image("bert_report.png", caption="BERT", use_column_width=True)
-    st.image("deberta_report.png", caption="DeBERTa", use_column_width=True)
+    st.image("clasification_report.png", caption="LSTM", use_container_width=True)
+    st.image("bert_report.png", caption="BERT", use_container_width=True)
+    st.image("deberta_report.png", caption="DeBERTa", use_container_width=True)
 
     st.subheader("Confusion Matrices")
-    st.image("confusion_matrix.png", caption="LSTM", use_column_width=True)
-    st.image("bert_confusion_matrix.jpeg", caption="BERT", use_column_width=True)
-    st.image("deberta_confusion_matrix.jpeg", caption="DeBERTa", use_column_width=True)
+    st.image("confusion_matrix.png", caption="LSTM", use_container_width=True)
+    st.image("bert_confusion_matrix.jpeg", caption="BERT", use_container_width=True)
+    st.image("deberta_confusion_matrix.jpeg", caption="DeBERTa", use_container_width=True)
 
     st.subheader("Error Analysis")
     st.markdown("""
