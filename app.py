@@ -196,14 +196,14 @@ def tuning():
 
     if model_option == "LSTM":
         st.markdown("""
-        We used **Optuna** to tune hyperparameters for the LSTM model with the goal of maximizing validation accuracy.
+        We used Optuna to tune hyperparameters for the LSTM model with the goal of maximizing validation accuracy.
         The search space included:
 
-        - 📏 `embedding_dim`
-        - 🔄 `lstm_units`
-        - 🌧 `dropout`
-        - 🧠 `learning_rate`
-        - 📦 `batch_size`
+        - embedding_dim 📏
+        - lstm_units 🔄 
+        - dropout 🌧 
+        - learning_rate 🧠 
+        - batch_size 📦 
         """)
 
         # Load and display results
@@ -215,7 +215,7 @@ def tuning():
 
         st.subheader("Validation Accuracy Over Trials 📈")
         fig, ax = plt.subplots()
-        sns.lineplot(x="trial", y="val_accuracy", data=df, marker="o", ax=ax, color="green")
+        sns.lineplot(x="trial", y="val_accuracy", data=df, marker="o", ax=ax, color="lightblue")
         ax.set_ylabel("Validation Accuracy")
         ax.set_xlabel("Trial Number")
         ax.set_title("Optuna Optimization Progress")
@@ -226,12 +226,12 @@ def tuning():
         st.markdown(f"""
         **Best Trial Summary**
 
-        - 📏 `embedding_dim`: **{int(best['embedding_dim'])}**  
-        - 🔄 `lstm_units`: **{int(best['lstm_units'])}**  
-        - 🌧 `dropout`: **{best['dropout']:.4f}**  
-        - 🧠 `learning_rate`: **{best['learning_rate']:.5f}**  
-        - 📦 `batch_size`: **{int(best['batch_size'])}**  
-        - ✅ `validation_accuracy`: **{best['val_accuracy']:.2%}**
+        - embedding_dim 📏: {int(best['embedding_dim'])} 
+        - lstm_units 🔄: {int(best['lstm_units'])}
+        - dropout 🌧: {best['dropout']:.4f}
+        - learning_rate 🧠: {best['learning_rate']:.5f} 
+        - batch_size 📦: {int(best['batch_size'])}  
+        - validation_accuracy ✅: {best['val_accuracy']:.2%}
         """)
 
     elif model_option == "BERT":
@@ -240,9 +240,9 @@ def tuning():
         Although we did not use Optuna for automated tuning due to time and compute constraints,
         we manually set the following commonly recommended hyperparameters:
     
-        - 🧠 `learning_rate`: **2e-5**
-        - 📦 `batch_size`: **16**
-        - 🔁 `epochs`: **3**
+        - learning_rate 🧠: 2e-5
+        - batch_size 📦: 16
+        - epochs 🔁: 3
     
         These values were selected based on popular setups in BERT fine-tuning literature.
         """)
@@ -254,10 +254,10 @@ def tuning():
         Our DeBERTa model was fine-tuned using `microsoft/deberta-base` and PyTorch.  
         As with BERT, we did not perform automated tuning. Instead, we used the following parameters:
     
-        - 🧠 `learning_rate`: **2e-5**
-        - 📦 `batch_size`: **16**
-        - 🔁 `epochs`: **3**
-        - 🌧 `dropout`: **0.3**
+        - learning_rate 🧠: 2e-5
+        - batch_size 📦: 16
+        - epochs 🔁: 3
+        - dropout 🌧: 0.3
     
         This configuration was chosen to mirror typical transformer fine-tuning setups.
         """)
@@ -267,23 +267,75 @@ def tuning():
 # ========== JUSTIFICATION PAGE ==========
 def justification():
     st.header("Model Analysis and Justification 🧐")
-    st.subheader("Classification Reports")
+
+    # === 1. Dataset Analysis ===
+    st.subheader("What Makes This Dataset Challenging?")
+    st.markdown("""
+    The *Sarcasm Headlines Dataset* is challenging due to several factors:
+    
+    - ⚖️ **Subtle class imbalance**: Slightly more non-sarcastic headlines.
+    - 🔊 **Noisy language**: Headlines are short, informal, and often ambiguous.
+    - 🧠 **Context-dependency**: Sarcasm often depends on cultural or external knowledge.
+    - 🤷‍♀️ **Label ambiguity**: Some headlines may be sarcastic only in certain contexts.
+
+    These challenges require models with strong linguistic and contextual understanding.
+    """)
+
+    # === 2. Model Justification ===
+    st.subheader("Model Selection and Justification 🧩")
+    st.markdown("""
+    - 🧪 **LSTM**: Used as a baseline. Handles sequence data and learns word dependencies, but struggles with long-range context and syntactic nuance.
+    - 🤖 **BERT**: Pretrained transformer with contextual embeddings. Strong at general sarcasm detection, though limited by its original English corpus.
+    - 🧠 **DeBERTa**: Builds on BERT with **disentangled attention** and improved encoding of syntactic information. It handled subtle cues better and showed higher F1 in both classes.
+
+    Based on prior work such as [Kaggle’s sarcasm detection kernels](https://www.kaggle.com/competitions/news-headlines-sarcasm-detection), transformer models consistently outperform RNNs for nuanced tasks like sarcasm detection.
+    """)
+
+    # === 3. Classification Reports ===
+    st.subheader("Classification Reports 📄")
     st.image("clasification_report.png", caption="LSTM", use_container_width=True)
     st.image("bert_report.png", caption="BERT", use_container_width=True)
     st.image("deberta_report.png", caption="DeBERTa", use_container_width=True)
+    st.markdown("""
+    DeBERTa achieved the highest **F1-score** and balanced performance between classes, especially in identifying **sarcastic content**, which tends to be more contextually complex.
+    """)
 
-    st.subheader("Confusion Matrices")
+    # === 4. Confusion Matrices ===
+    st.subheader("Confusion Matrices 🧮")
     st.image("confusion_matrix.png", caption="LSTM", use_container_width=True)
     st.image("bert_confusion_matrix.jpeg", caption="BERT", use_container_width=True)
     st.image("deberta_confusion_matrix.jpeg", caption="DeBERTa", use_container_width=True)
-
-    st.subheader("Error Analysis")
     st.markdown("""
-    False positives often occur when headlines use exaggerated language without actual sarcasm.
-    False negatives include headlines that are subtle or require external context.
-
-    *DeBERTa* performed slightly better in recall for both classes due to its deeper syntactic understanding.
+    - LSTM tended to overpredict the majority class (non-sarcastic).
+    - BERT showed better class separation but missed subtle sarcasm.
+    - DeBERTa balanced precision and recall more effectively.
     """)
+
+    # === 5. Error Analysis ===
+    st.subheader("Error Analysis 🧨")
+    st.markdown("""
+    **False Positives**:  
+    Headlines with exaggeration or negativity, but not true sarcasm.  
+    Example: *"World ends tomorrow, women and minorities hardest hit"*
+
+    **False Negatives**:  
+    Subtle sarcasm, often requiring world knowledge or tone.  
+    Example: *"Oh great, another Monday morning meeting"*
+
+    **Common patterns**:
+    - Named entities (e.g., politicians, celebrities)
+    - Negations and irony
+    - Short ambiguous headlines
+
+    **Suggestions for Improvement**:
+    - Include **external context** (e.g., news topic, article body)
+    - Apply **data augmentation** (e.g., back translation or adversarial examples)
+    - Use **ensemble models** (e.g., DeBERTa + CNN or LSTM voting)
+    - Improve labeling with **crowdsourced validation**
+    """)
+
+    st.success("Overall, DeBERTa demonstrated the best understanding of syntactic cues and contextual subtleties in this sarcasm detection task.")
+
 
 # ========== LAYOUT ==========
 page = st.selectbox("Select one:", [
