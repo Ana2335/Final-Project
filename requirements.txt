@@ -9,3 +9,5 @@ pandas
 matplotlib
 seaborn
 wordcloud
+torch
+transformers
