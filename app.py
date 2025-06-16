@@ -157,12 +157,12 @@ def visualization():
     st.markdown("Frequent words in each class may hint at language patterns linked to sarcasm.")
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("*Not Sarcastic 🚫*")
+        st.markdown("Not Sarcastic 🚫")
         text = " ".join(df[df["label"] == 0]["headline"])
         wc = WordCloud(width=300, height=200, background_color="white").generate(text)
         st.image(wc.to_array())
     with col2:
-        st.markdown("*Sarcastic 🌀*")
+        st.markdown("Sarcastic 🌀")
         text = " ".join(df[df["label"] == 1]["headline"])
         wc = WordCloud(width=300, height=200, background_color="white").generate(text)
         st.image(wc.to_array())
