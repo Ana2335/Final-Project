@@ -44,7 +44,7 @@ class BertClassifier(nn.Module):
 @st.cache_resource
 def load_bert():
     model = BertClassifier()
-    state_dict = torch.load("bert_model (1).pth", map_location="cpu")
+    state_dict = torch.load("bert_model.pth", map_location="cpu")
     model.load_state_dict(state_dict)
     model.eval()
 
@@ -69,7 +69,7 @@ class DebertaClassifier(nn.Module):
 @st.cache_resource
 def load_deberta():
     model = DebertaClassifier()
-    state_dict = torch.load("deberta_model (1).pth", map_location="cpu")
+    state_dict = torch.load("deberta_model.pth", map_location="cpu")
     model.load_state_dict(state_dict)
     model.eval()
 
