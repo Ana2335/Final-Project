@@ -247,7 +247,7 @@ def tuning():
         These values were selected based on popular setups in BERT fine-tuning literature.
         """)
     
-        sst.info("Due to resource and time constraints, automated tuning was not performed for BERT. The configuration was selected manually based on established fine-tuning practices.")
+        st.info("Due to resource and time constraints, automated tuning was not performed for BERT. The configuration was selected manually based on established fine-tuning practices.")
 
     elif model_option == "DeBERTa":
         st.markdown("""
